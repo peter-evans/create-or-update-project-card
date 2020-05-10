@@ -1,0 +1,33 @@
+name: 'Create or Update Project Card'
+description: 'A GitHub action to create or update a project card'
+inputs:
+  token:
+    description: 'GitHub auth token'
+    default: ${{ github.token }}
+  project-number:
+    description: >
+      The number of the project.
+      Semi-required. Either `project-number` OR `project-name` must be supplied.
+  project-name:
+    description: >
+      The name of the project.
+      Semi-required. Either `project-number` OR `project-name` must be supplied.
+      Note that a project's name is not unique. The action will use the first matching project found.
+  column-name:
+    description: 'The name of the column to add a card to, or move an existing card to.'
+    required: true
+  repository:
+    description: 'The GitHub repository containing the issue or pull request.'
+    default: ${{ github.repository }}
+  issue-number:
+    description: 'The issue or pull request number to associate with the card.'
+    default: ${{ github.event.issue.number }}
+outputs:
+  card-id:
+    description: 'The ID of the card.'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  icon: 'file-plus'
+  color: 'gray-dark'
