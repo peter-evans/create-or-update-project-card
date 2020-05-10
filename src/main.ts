@@ -30,7 +30,7 @@ async function getContent(octokit, owner, repo, issueNumber): Promise<object> {
     })
     return {
       id: pull['id'],
-      url: pull['url'],
+      url: issue['url'],
       type: 'PullRequest'
     }
   } else {
