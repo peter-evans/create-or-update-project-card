@@ -50,6 +50,8 @@ jobs:
 
 ### Create a card for all new pull requests
 
+Note: Does not work for pull requests from repository forks.
+
 ```yml
 on:
   pull_request:
