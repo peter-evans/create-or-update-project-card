@@ -31,6 +31,21 @@ If not in the specified column, the action will move the card.
           issue-number: 1
 ```
 
+### Create a card in an organization or user project
+
+When creating cards in an organization or user project, a `repo` and `admin:org` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) is required.
+
+```yml
+      - name: Create or Update Project Card
+        uses: peter-evans/create-or-update-project-card@v1
+        with:
+          token: ${{ secrets.PAT }}
+          project-location: my-org
+          project-name: My project
+          column-name: My second column
+          issue-number: 1
+```
+
 ### Create a card for all new issues
 
 ```yml
@@ -73,6 +88,7 @@ jobs:
 | Name | Description | Default |
 | --- | --- | --- |
 | `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | `GITHUB_TOKEN` |
+| `project-location` | The location of the project. Either a repository, organization, or user. | `github.repository` (current repository) |
 | `project-number` | (**semi-required**) The number of the project. Either `project-number` OR `project-name` must be supplied. | |
 | `project-name` | (**semi-required**) The name of the project. Either `project-number` OR `project-name` must be supplied. Note that a project's name is not unique. The action will use the first matching project found. | |
 | `column-name` | (**required**) The name of the column to add a card to, or move an existing card to. | |
