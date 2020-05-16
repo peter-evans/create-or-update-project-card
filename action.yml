@@ -4,6 +4,10 @@ inputs:
   token:
     description: 'GitHub auth token'
     default: ${{ github.token }}
+  project-location:
+    description: >
+      The location of the project. Either a repository, organization, or user.
+    default: ${{ github.repository }}
   project-number:
     description: >
       The number of the project.

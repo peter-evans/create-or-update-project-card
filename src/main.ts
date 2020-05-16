@@ -2,6 +2,39 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {inspect} from 'util'
 
+async function isOrg(octokit, owner): Promise<boolean> {
+  try {
+    await octokit.orgs.get({
+      org: owner
+    })
+    return true
+  } catch (error) {
+    core.debug(inspect(error))
+    return false
+  }
+}
+
+async function getProjects(octokit, projectLocation): Promise<object> {
+  const [owner, repo] = projectLocation.split('/')
+  if (repo) {
+    const {data: projects} = await octokit.projects.listForRepo({
+      owner: owner,
+      repo: repo
+    })
+    return projects
+  } else if (await isOrg(octokit, owner)) {
+    const {data: projects} = await octokit.projects.listForOrg({
+      org: owner
+    })
+    return projects
+  } else {
+    const {data: projects} = await octokit.projects.listForUser({
+      username: owner
+    })
+    return projects
+  }
+}
+
 function getProject(projects, projectNumber, projectName): object {
   if (!isNaN(projectNumber) && projectNumber > 0) {
     return projects.find(project => project.number == projectNumber)
@@ -12,7 +45,8 @@ function getProject(projects, projectNumber, projectName): object {
   }
 }
 
-async function getContent(octokit, owner, repo, issueNumber): Promise<object> {
+async function getContent(octokit, repository, issueNumber): Promise<object> {
+  const [owner, repo] = repository.split('/')
   const {data: issue} = await octokit.issues.get({
     owner: owner,
     repo: repo,
@@ -86,6 +120,7 @@ async function run(): Promise<void> {
   try {
     const inputs = {
       token: core.getInput('token'),
+      projectLocation: core.getInput('project-location'),
       projectNumber: Number(core.getInput('project-number')),
       projectName: core.getInput('project-name'),
       columnName: core.getInput('column-name'),
@@ -94,14 +129,9 @@ async function run(): Promise<void> {
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
-    const [owner, repo] = inputs.repository.split('/')
-
     const octokit = new github.GitHub(inputs.token)
 
-    const {data: projects} = await octokit.projects.listForRepo({
-      owner: owner,
-      repo: repo
-    })
+    const projects = await getProjects(octokit, inputs.projectLocation)
     core.debug(`Projects: ${inspect(projects)}`)
 
     const project = getProject(
@@ -121,7 +151,11 @@ async function run(): Promise<void> {
     core.debug(`Column: ${inspect(column)}`)
     if (!column) throw 'No column matching the supplied input found.'
 
-    const content = await getContent(octokit, owner, repo, inputs.issueNumber)
+    const content = await getContent(
+      octokit,
+      inputs.repository,
+      inputs.issueNumber
+    )
     core.debug(`Content: ${inspect(content)}`)
 
     const existingCard = await findCardInColumns(

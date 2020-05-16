@@ -43,7 +43,9 @@ jobs:
           name: dist
           path: dist
 
-      - name: Test create card
+      # Repository project tests
+
+      - name: Repo project - create card
         id: coupc-1
         uses: ./
         with:
@@ -51,21 +53,21 @@ jobs:
           column-name: Test column 1
           issue-number: 1
 
-      - name: Test card already exists
+      - name: Repo project - card exists
         uses: ./
         with:
           project-name: '[CI] ${{ matrix.target }}'
           column-name: Test column 1
           issue-number: 1
 
-      - name: Test move card to column
+      - name: Repo project - move card
         uses: ./
         with:
           project-name: '[CI] ${{ matrix.target }}'
           column-name: Test column 2
           issue-number: 1
 
-      - name: Delete card
+      - name: Repo project - delete card
         uses: actions/github-script@0.9.0
         with:
           script: |
@@ -73,7 +75,7 @@ jobs:
               card_id: ${{ steps.coupc-1.outputs.card-id }}
             })
 
-      - name: Test create card associated with a pull request
+      - name: Repo project - create card (pull request)
         if: github.event_name == 'pull_request'
         id: coupc-2
         uses: ./
@@ -82,7 +84,7 @@ jobs:
           column-name: Test column 1
           issue-number: ${{ github.event.number }}
 
-      - name: Test card already exists with a pull request
+      - name: Repo project - card exists (pull request)
         if: github.event_name == 'pull_request'
         uses: ./
         with:
@@ -90,13 +92,97 @@ jobs:
           column-name: Test column 1
           issue-number: ${{ github.event.number }}
 
-      - name: Delete card
+      - name: Repo project - delete card (pull request)
         if: github.event_name == 'pull_request'
         uses: actions/github-script@0.9.0
         with:
           script: |
             github.projects.deleteCard({
               card_id: ${{ steps.coupc-2.outputs.card-id }}
+            })
+
+      # Org project tests
+
+      - name: Org project - create card
+        id: coupc-3
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: create-or-update-project-card
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 1
+          repository: create-or-update-project-card/test-fixture
+          issue-number: 1
+
+      - name: Org project - card exists
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: create-or-update-project-card
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 1
+          repository: create-or-update-project-card/test-fixture
+          issue-number: 1
+
+      - name: Org project - move card
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: create-or-update-project-card
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 2
+          repository: create-or-update-project-card/test-fixture
+          issue-number: 1
+
+      - name: Org project - delete card
+        uses: actions/github-script@0.9.0
+        with:
+          github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          script: |
+            github.projects.deleteCard({
+              card_id: ${{ steps.coupc-3.outputs.card-id }}
+            })
+
+      # User project tests
+
+      - name: User project - create card
+        id: coupc-4
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: test-case-machine-user
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 1
+          repository: test-case-machine-user/create-or-update-project-card-fixture
+          issue-number: 1
+
+      - name: User project - card exists
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: test-case-machine-user
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 1
+          repository: test-case-machine-user/create-or-update-project-card-fixture
+          issue-number: 1
+
+      - name: User project - move card
+        uses: ./
+        with:
+          token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          project-location: test-case-machine-user
+          project-name: '[CI] ${{ matrix.target }}'
+          column-name: Test column 2
+          repository: test-case-machine-user/create-or-update-project-card-fixture
+          issue-number: 1
+
+      - name: User project - delete card
+        uses: actions/github-script@0.9.0
+        with:
+          github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
+          script: |
+            github.projects.deleteCard({
+              card_id: ${{ steps.coupc-4.outputs.card-id }}
             })
 
   package:
