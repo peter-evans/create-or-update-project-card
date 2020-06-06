@@ -992,7 +992,7 @@ function isOrg(octokit, owner) {
 function getProjects(octokit, projectLocation) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = projectLocation.split('/');
-        const data = yield (() => __awaiter(this, void 0, void 0, function* () {
+        const { data: projects } = yield (() => __awaiter(this, void 0, void 0, function* () {
             if (repo) {
                 return yield octokit.projects.listForRepo({
                     owner: owner,
@@ -1010,8 +1010,8 @@ function getProjects(octokit, projectLocation) {
                 });
             }
         }))();
-        core.debug(`Projects data: ${util_1.inspect(data)}`);
-        return data.projects.map(p => {
+        core.debug(`Projects list: ${util_1.inspect(projects)}`);
+        return projects.map(p => {
             return new Project(p.number, p.name, p.id);
         });
     });

@@ -47,7 +47,7 @@ async function isOrg(octokit, owner): Promise<boolean> {
 
 async function getProjects(octokit, projectLocation): Promise<Project[]> {
   const [owner, repo] = projectLocation.split('/')
-  const data = await (async () => {
+  const {data: projects} = await (async () => {
     if (repo) {
       return await octokit.projects.listForRepo({
         owner: owner,
@@ -63,9 +63,9 @@ async function getProjects(octokit, projectLocation): Promise<Project[]> {
       })
     }
   })()
-  core.debug(`Projects data: ${inspect(data)}`)
+  core.debug(`Projects list: ${inspect(projects)}`)
 
-  return data.projects.map(p => {
+  return projects.map(p => {
     return new Project(p.number, p.name, p.id)
   })
 }
