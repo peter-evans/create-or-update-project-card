@@ -129,7 +129,7 @@ async function run(): Promise<void> {
     }
     core.debug(`Inputs: ${inspect(inputs)}`)
 
-    const octokit = new github.GitHub(inputs.token)
+    const octokit = github.getOctokit(inputs.token)
 
     const projects = await getProjects(octokit, inputs.projectLocation)
     core.debug(`Projects: ${inspect(projects)}`)
