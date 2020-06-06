@@ -1010,6 +1010,7 @@ function getProjects(octokit, projectLocation) {
                 });
             }
         }))();
+        core.debug(`Projects data: ${util_1.inspect(data)}`);
         return data.projects.map(p => {
             return new Project(p.number, p.name, p.id);
         });

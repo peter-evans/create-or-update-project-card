@@ -63,6 +63,7 @@ async function getProjects(octokit, projectLocation): Promise<Project[]> {
       })
     }
   })()
+  core.debug(`Projects data: ${inspect(data)}`)
 
   return data.projects.map(p => {
     return new Project(p.number, p.name, p.id)
