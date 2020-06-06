@@ -2,6 +2,37 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {inspect} from 'util'
 
+class Project {
+  number: number
+  name: string
+  id: number
+  constructor(number: number, name: string, id: number) {
+    this.number = number
+    this.name = name
+    this.id = id
+  }
+}
+
+class CardContent {
+  id: number
+  url: string
+  type: string
+  constructor(id: number, url: string, type: string) {
+    this.id = id
+    this.url = url
+    this.type = type
+  }
+}
+
+class Card {
+  id: number
+  columnUrl: string
+  constructor(id: number, columnUrl: string) {
+    this.id = id
+    this.columnUrl = columnUrl
+  }
+}
+
 async function isOrg(octokit, owner): Promise<boolean> {
   try {
     await octokit.orgs.get({
@@ -14,28 +45,35 @@ async function isOrg(octokit, owner): Promise<boolean> {
   }
 }
 
-async function getProjects(octokit, projectLocation): Promise<object> {
+async function getProjects(octokit, projectLocation): Promise<Project[]> {
   const [owner, repo] = projectLocation.split('/')
-  if (repo) {
-    const {data: projects} = await octokit.projects.listForRepo({
-      owner: owner,
-      repo: repo
-    })
-    return projects
-  } else if (await isOrg(octokit, owner)) {
-    const {data: projects} = await octokit.projects.listForOrg({
-      org: owner
-    })
-    return projects
-  } else {
-    const {data: projects} = await octokit.projects.listForUser({
-      username: owner
-    })
-    return projects
-  }
+  const data = await (async () => {
+    if (repo) {
+      return await octokit.projects.listForRepo({
+        owner: owner,
+        repo: repo
+      })
+    } else if (await isOrg(octokit, owner)) {
+      return await octokit.projects.listForOrg({
+        org: owner
+      })
+    } else {
+      return await octokit.projects.listForUser({
+        username: owner
+      })
+    }
+  })()
+
+  return data.projects.map(p => {
+    return new Project(p.number, p.name, p.id)
+  })
 }
 
-function getProject(projects, projectNumber, projectName): object {
+function getProject(
+  projects: Project[],
+  projectNumber,
+  projectName
+): Project | undefined {
   if (!isNaN(projectNumber) && projectNumber > 0) {
     return projects.find(project => project.number == projectNumber)
   } else if (projectName) {
@@ -45,7 +83,11 @@ function getProject(projects, projectNumber, projectName): object {
   }
 }
 
-async function getContent(octokit, repository, issueNumber): Promise<object> {
+async function getContent(
+  octokit,
+  repository,
+  issueNumber
+): Promise<CardContent> {
   const [owner, repo] = repository.split('/')
   const {data: issue} = await octokit.issues.get({
     owner: owner,
@@ -62,17 +104,9 @@ async function getContent(octokit, repository, issueNumber): Promise<object> {
       repo: repo,
       pull_number: issueNumber
     })
-    return {
-      id: pull['id'],
-      url: issue['url'],
-      type: 'PullRequest'
-    }
+    return new CardContent(pull['id'], issue['url'], 'PullRequest')
   } else {
-    return {
-      id: issue['id'],
-      url: issue['url'],
-      type: 'Issue'
-    }
+    return new CardContent(issue['id'], issue['url'], 'Issue')
   }
 }
 
@@ -81,7 +115,7 @@ async function findCardInColumn(
   columnId,
   contentUrl,
   page = 1
-): Promise<object> {
+): Promise<Card | undefined> {
   const perPage = 100
   const {data: cards} = await octokit.projects.listCards({
     column_id: columnId,
@@ -93,11 +127,11 @@ async function findCardInColumn(
   const card = cards.find(card => card.content_url == contentUrl)
 
   if (card) {
-    return card
+    return new Card(card.id, card.column_url)
   } else if (cards.length == perPage) {
     return findCardInColumn(octokit, columnId, contentUrl, ++page)
   } else {
-    return {}
+    return undefined
   }
 }
 
@@ -105,15 +139,15 @@ async function findCardInColumns(
   octokit,
   columns,
   contentUrl
-): Promise<object> {
+): Promise<Card | undefined> {
   for (const column of columns) {
     const card = await findCardInColumn(octokit, column['id'], contentUrl)
     core.debug(`findCardInColumn: ${inspect(card)}`)
-    if (Object.keys(card).length > 0) {
+    if (card) {
       return card
     }
   }
-  return {}
+  return undefined
 }
 
 async function run(): Promise<void> {
@@ -143,7 +177,7 @@ async function run(): Promise<void> {
     if (!project) throw 'No project matching the supplied inputs found.'
 
     const {data: columns} = await octokit.projects.listColumns({
-      project_id: project['id']
+      project_id: project.id
     })
     core.debug(`Columns: ${inspect(columns)}`)
 
@@ -158,36 +192,32 @@ async function run(): Promise<void> {
     )
     core.debug(`Content: ${inspect(content)}`)
 
-    const existingCard = await findCardInColumns(
-      octokit,
-      columns,
-      content['url']
-    )
-    if (Object.keys(existingCard).length > 0) {
+    const existingCard = await findCardInColumns(octokit, columns, content.url)
+    if (existingCard) {
       core.debug(`Existing card: ${inspect(existingCard)}`)
       core.info(
-        `An existing card is already associated with ${content['type']} #${inputs.issueNumber}`
+        `An existing card is already associated with ${content.type} #${inputs.issueNumber}`
       )
-      core.setOutput('card-id', existingCard['id'])
+      core.setOutput('card-id', existingCard.id)
 
-      if (existingCard['column_url'] != column['url']) {
+      if (existingCard.columnUrl != column.url) {
         core.info(`Moving card to column '${inputs.columnName}'`)
         await octokit.projects.moveCard({
-          card_id: existingCard['id'],
+          card_id: existingCard.id,
           position: 'top',
-          column_id: column['id']
+          column_id: column.id
         })
       }
     } else {
       core.info(
-        `Creating card associated with ${content['type']} #${inputs.issueNumber}`
+        `Creating card associated with ${content.type} #${inputs.issueNumber}`
       )
       const {data: card} = await octokit.projects.createCard({
-        column_id: column['id'],
-        content_id: content['id'],
-        content_type: content['type']
+        column_id: column.id,
+        content_id: content.id,
+        content_type: content.type
       })
-      core.setOutput('card-id', card['id'])
+      core.setOutput('card-id', card.id)
     }
   } catch (error) {
     core.debug(inspect(error))
