@@ -33,7 +33,7 @@ If not in the specified column, the action will move the card.
 
 ### Create a card in an organization or user project
 
-When creating cards in an organization or user project, a `repo` and `admin:org` scoped [Personal Access Token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) is required.
+When creating cards in an organization or user project, a `repo` and `admin:org` scoped [Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) is required.
 
 ```yml
       - name: Create or Update Project Card
@@ -65,11 +65,13 @@ jobs:
 
 ### Create a card for all new pull requests
 
-Note: Does not work for pull requests from repository forks.
+Note that the following example uses the [`pull_request_target`](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request_target) event, *not* `pull_request`.
+In *public* repositories this action does not work in `pull_request` workflows when triggered by forks.
+This is due to token restrictions put in place by GitHub Actions. Private repositories can be configured to [enable workflows](https://docs.github.com/en/github/administering-a-repository/disabling-or-limiting-github-actions-for-a-repository#enabling-workflows-for-private-repository-forks) from forks to run without restriction. See [here](https://github.com/peter-evans/create-pull-request/blob/master/docs/concepts-guidelines.md#restrictions-on-repository-forks) for further explanation.
 
 ```yml
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
 jobs:
   createCard:
@@ -87,7 +89,7 @@ jobs:
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). | `GITHUB_TOKEN` |
+| `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). | `GITHUB_TOKEN` |
 | `project-location` | The location of the project. Either a repository, organization, or user. | `github.repository` (current repository) |
 | `project-number` | (**semi-required**) The number of the project. Either `project-number` OR `project-name` must be supplied. | |
 | `project-name` | (**semi-required**) The name of the project. Either `project-number` OR `project-name` must be supplied. Note that a project's name is not unique. The action will use the first matching project found. | |
