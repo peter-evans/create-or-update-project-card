@@ -76,21 +76,24 @@ function isOrg(octokit, owner) {
 function getProjects(octokit, projectLocation) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = projectLocation.split('/');
-        const { data: projects } = yield (() => __awaiter(this, void 0, void 0, function* () {
+        const projects = yield (() => __awaiter(this, void 0, void 0, function* () {
             if (repo) {
-                return yield octokit.projects.listForRepo({
+                return yield octokit.paginate(octokit.projects.listForRepo, {
                     owner: owner,
-                    repo: repo
+                    repo: repo,
+                    per_page: 100
                 });
             }
             else if (yield isOrg(octokit, owner)) {
-                return yield octokit.projects.listForOrg({
-                    org: owner
+                return yield octokit.paginate(octokit.projects.listForOrg, {
+                    org: owner,
+                    per_page: 100
                 });
             }
             else {
-                return yield octokit.projects.listForUser({
-                    username: owner
+                return yield octokit.paginate(octokit.projects.listForUser, {
+                    username: owner,
+                    per_page: 100
                 });
             }
         }))();

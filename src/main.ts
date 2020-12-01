@@ -47,19 +47,22 @@ async function isOrg(octokit, owner): Promise<boolean> {
 
 async function getProjects(octokit, projectLocation): Promise<Project[]> {
   const [owner, repo] = projectLocation.split('/')
-  const {data: projects} = await (async () => {
+  const projects = await (async () => {
     if (repo) {
-      return await octokit.projects.listForRepo({
+      return await octokit.paginate(octokit.projects.listForRepo, {
         owner: owner,
-        repo: repo
+        repo: repo,
+        per_page: 100
       })
     } else if (await isOrg(octokit, owner)) {
-      return await octokit.projects.listForOrg({
-        org: owner
+      return await octokit.paginate(octokit.projects.listForOrg, {
+        org: owner,
+        per_page: 100
       })
     } else {
-      return await octokit.projects.listForUser({
-        username: owner
+      return await octokit.paginate(octokit.projects.listForUser, {
+        username: owner,
+        per_page: 100
       })
     }
   })()
