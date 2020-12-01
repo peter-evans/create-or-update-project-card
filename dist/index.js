@@ -191,8 +191,9 @@ function run() {
             core.debug(`Project: ${util_1.inspect(project)}`);
             if (!project)
                 throw 'No project matching the supplied inputs found.';
-            const { data: columns } = yield octokit.projects.listColumns({
-                project_id: project.id
+            const columns = yield octokit.paginate(octokit.projects.listColumns, {
+                project_id: project.id,
+                per_page: 100
             });
             core.debug(`Columns: ${util_1.inspect(columns)}`);
             const column = columns.find(column => column.name == inputs.columnName);

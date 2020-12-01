@@ -180,8 +180,9 @@ async function run(): Promise<void> {
     core.debug(`Project: ${inspect(project)}`)
     if (!project) throw 'No project matching the supplied inputs found.'
 
-    const {data: columns} = await octokit.projects.listColumns({
-      project_id: project.id
+    const columns = await octokit.paginate(octokit.projects.listColumns, {
+      project_id: project.id,
+      per_page: 100
     })
     core.debug(`Columns: ${inspect(columns)}`)
 
