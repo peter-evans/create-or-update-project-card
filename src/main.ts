@@ -224,7 +224,7 @@ async function run(): Promise<void> {
       })
       core.setOutput('card-id', card.id)
     }
-  } catch (error) {
+  } catch (error: any) {
     core.debug(inspect(error))
     core.setFailed(error.message)
   }
