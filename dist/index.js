@@ -67,7 +67,7 @@ function isOrg(octokit, owner) {
             return true;
         }
         catch (error) {
-            core.debug(util_1.inspect(error));
+            core.debug((0, util_1.inspect)(error));
             return false;
         }
     });
@@ -96,7 +96,7 @@ function getProjects(octokit, projectLocation) {
                 });
             }
         }))();
-        core.debug(`Projects list: ${util_1.inspect(projects)}`);
+        core.debug(`Projects list: ${(0, util_1.inspect)(projects)}`);
         return projects.map(p => {
             return new Project(p.number, p.name, p.id);
         });
@@ -121,7 +121,7 @@ function getContent(octokit, repository, issueNumber) {
             repo: repo,
             issue_number: issueNumber
         });
-        core.debug(`Issue: ${util_1.inspect(issue)}`);
+        core.debug(`Issue: ${(0, util_1.inspect)(issue)}`);
         if (!issue)
             throw 'No issue or pull request matching the supplied input found.';
         if (issue['pull_request']) {
@@ -145,7 +145,7 @@ function findCardInColumn(octokit, columnId, contentUrl, page = 1) {
             per_page: perPage,
             page: page
         });
-        core.debug(`Cards: ${util_1.inspect(cards)}`);
+        core.debug(`Cards: ${(0, util_1.inspect)(cards)}`);
         const card = cards.find(card => card.content_url == contentUrl);
         if (card) {
             return new Card(card.id, card.column_url);
@@ -162,7 +162,7 @@ function findCardInColumns(octokit, columns, contentUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         for (const column of columns) {
             const card = yield findCardInColumn(octokit, column['id'], contentUrl);
-            core.debug(`findCardInColumn: ${util_1.inspect(card)}`);
+            core.debug(`findCardInColumn: ${(0, util_1.inspect)(card)}`);
             if (card) {
                 return card;
             }
@@ -182,28 +182,28 @@ function run() {
                 repository: core.getInput('repository'),
                 issueNumber: Number(core.getInput('issue-number'))
             };
-            core.debug(`Inputs: ${util_1.inspect(inputs)}`);
+            core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             const octokit = github.getOctokit(inputs.token);
             const projects = yield getProjects(octokit, inputs.projectLocation);
-            core.debug(`Projects: ${util_1.inspect(projects)}`);
+            core.debug(`Projects: ${(0, util_1.inspect)(projects)}`);
             const project = getProject(projects, inputs.projectNumber, inputs.projectName);
-            core.debug(`Project: ${util_1.inspect(project)}`);
+            core.debug(`Project: ${(0, util_1.inspect)(project)}`);
             if (!project)
                 throw 'No project matching the supplied inputs found.';
             const columns = yield octokit.paginate(octokit.rest.projects.listColumns, {
                 project_id: project.id,
                 per_page: 100
             });
-            core.debug(`Columns: ${util_1.inspect(columns)}`);
+            core.debug(`Columns: ${(0, util_1.inspect)(columns)}`);
             const column = columns.find(column => column.name == inputs.columnName);
-            core.debug(`Column: ${util_1.inspect(column)}`);
+            core.debug(`Column: ${(0, util_1.inspect)(column)}`);
             if (!column)
                 throw 'No column matching the supplied input found.';
             const content = yield getContent(octokit, inputs.repository, inputs.issueNumber);
-            core.debug(`Content: ${util_1.inspect(content)}`);
+            core.debug(`Content: ${(0, util_1.inspect)(content)}`);
             const existingCard = yield findCardInColumns(octokit, columns, content.url);
             if (existingCard) {
-                core.debug(`Existing card: ${util_1.inspect(existingCard)}`);
+                core.debug(`Existing card: ${(0, util_1.inspect)(existingCard)}`);
                 core.info(`An existing card is already associated with ${content.type} #${inputs.issueNumber}`);
                 core.setOutput('card-id', existingCard.id);
                 if (existingCard.columnUrl != column.url) {
@@ -226,7 +226,7 @@ function run() {
             }
         }
         catch (error) {
-            core.debug(util_1.inspect(error));
+            core.debug((0, util_1.inspect)(error));
             core.setFailed(error.message);
         }
     });
@@ -369,7 +369,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
+exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __nccwpck_require__(351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(278);
@@ -547,19 +547,30 @@ exports.debug = debug;
 /**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function error(message) {
-    command_1.issue('error', message instanceof Error ? message.toString() : message);
+function error(message, properties = {}) {
+    command_1.issueCommand('error', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
- * Adds an warning issue
+ * Adds a warning issue
  * @param message warning issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function warning(message) {
-    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+function warning(message, properties = {}) {
+    command_1.issueCommand('warning', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
+/**
+ * Adds a notice issue
+ * @param message notice issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
+ */
+function notice(message, properties = {}) {
+    command_1.issueCommand('notice', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
+exports.notice = notice;
 /**
  * Writes info to log with console.log.
  * @param message info message
@@ -693,7 +704,7 @@ exports.issueCommand = issueCommand;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toCommandValue = void 0;
+exports.toCommandProperties = exports.toCommandValue = void 0;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -708,6 +719,25 @@ function toCommandValue(input) {
     return JSON.stringify(input);
 }
 exports.toCommandValue = toCommandValue;
+/**
+ *
+ * @param annotationProperties
+ * @returns The command properties to send with the actual annotation command
+ * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
+ */
+function toCommandProperties(annotationProperties) {
+    if (!Object.keys(annotationProperties).length) {
+        return {};
+    }
+    return {
+        title: annotationProperties.title,
+        line: annotationProperties.startLine,
+        endLine: annotationProperties.endLine,
+        col: annotationProperties.startColumn,
+        endColumn: annotationProperties.endColumn
+    };
+}
+exports.toCommandProperties = toCommandProperties;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
