@@ -77,10 +77,10 @@ jobs:
           issue-number: 1
 
       - name: Repo project - delete card
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           script: |
-            github.projects.deleteCard({
+            github.rest.projects.deleteCard({
               card_id: ${{ steps.coupc-1.outputs.card-id }}
             })
 
@@ -103,10 +103,10 @@ jobs:
 
       - name: Repo project - delete card (pull request)
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           script: |
-            github.projects.deleteCard({
+            github.rest.projects.deleteCard({
               card_id: ${{ steps.coupc-2.outputs.card-id }}
             })
 
@@ -144,11 +144,11 @@ jobs:
           issue-number: 1
 
       - name: Org project - delete card
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
           script: |
-            github.projects.deleteCard({
+            github.rest.projects.deleteCard({
               card_id: ${{ steps.coupc-3.outputs.card-id }}
             })
 
@@ -186,11 +186,11 @@ jobs:
           issue-number: 1
 
       - name: User project - delete card
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
           script: |
-            github.projects.deleteCard({
+            github.rest.projects.deleteCard({
               card_id: ${{ steps.coupc-4.outputs.card-id }}
             })
 
