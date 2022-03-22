@@ -10,7 +10,7 @@ A GitHub action to create or update a project card.
 
 ```yml
       - name: Create or Update Project Card
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           project-name: My project
           column-name: My column
@@ -24,7 +24,7 @@ If not in the specified column, the action will move the card.
 
 ```yml
       - name: Create or Update Project Card
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           project-name: My project
           column-name: My second column
@@ -37,7 +37,7 @@ When creating cards in an organization or user project, a `repo` and `admin:org`
 
 ```yml
       - name: Create or Update Project Card
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           token: ${{ secrets.PAT }}
           project-location: my-org
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create or Update Project Card
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           project-name: My project
           column-name: My column
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create or Update Project Card
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           project-name: My project
           column-name: My column
@@ -104,7 +104,7 @@ The action outputs `card-id` for use in later workflow steps.
 ```yml
       - name: Create or Update Project Card
         id: coupc
-        uses: peter-evans/create-or-update-project-card@v1
+        uses: peter-evans/create-or-update-project-card@v2
         with:
           project-name: My project
           column-name: My column

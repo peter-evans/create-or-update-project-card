@@ -1,6 +1,6 @@
 {
   "name": "create-or-update-project-card",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "A GitHub action to create or update a project card",
   "main": "lib/main.js",
