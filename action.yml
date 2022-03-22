@@ -30,7 +30,7 @@ outputs:
   card-id:
     description: 'The ID of the card.'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'file-plus'
