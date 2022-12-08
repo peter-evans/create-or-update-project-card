@@ -2,7 +2,7 @@ name: 'Create or Update Project Card'
 description: 'A GitHub action to create or update a project card'
 inputs:
   token:
-    description: 'GitHub auth token'
+    description: 'GITHUB_TOKEN or a repo scoped PAT'
     default: ${{ github.token }}
   project-location:
     description: >
