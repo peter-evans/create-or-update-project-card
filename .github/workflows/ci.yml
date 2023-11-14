@@ -83,7 +83,7 @@ jobs:
           issue-number: 1
 
       - name: Repo project - delete card
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             github.rest.projects.deleteCard({
@@ -109,7 +109,7 @@ jobs:
 
       - name: Repo project - delete card (pull request)
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             github.rest.projects.deleteCard({
@@ -150,7 +150,7 @@ jobs:
           issue-number: 1
 
       - name: Org project - delete card
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
           script: |
@@ -192,7 +192,7 @@ jobs:
           issue-number: 1
 
       - name: User project - delete card
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
           script: |
