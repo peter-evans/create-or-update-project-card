@@ -117,6 +117,7 @@ async function getProjectId(
         }
       `
       const variables = {owner: projectOwner, title: projectTitle}
+      core.debug(`Variables: ${inspect(variables)}`)
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       if (response.user.projectsV2.nodes.length > 0) {

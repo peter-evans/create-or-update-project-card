@@ -147,6 +147,7 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
         }
       `;
                 const variables = { owner: projectOwner, title: projectTitle };
+                core.debug(`Variables: ${(0, util_1.inspect)(variables)}`);
                 const response = yield octokit.graphql(query, variables);
                 core.debug(`Response: ${(0, util_1.inspect)(response)}`);
                 if (response.user.projectsV2.nodes.length > 0) {
