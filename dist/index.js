@@ -279,7 +279,7 @@ function run() {
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             const octokit = github.getOctokit(inputs.token);
-            const projectId = getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName);
+            const projectId = yield getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName);
             core.debug(`Project ID: ${projectId}`);
             // const projects = await getProjects(octokit, inputs.projectLocation)
             // core.debug(`Projects: ${inspect(projects)}`)

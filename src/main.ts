@@ -259,7 +259,7 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(inputs.token)
 
-    const projectId = getProjectId(
+    const projectId = await getProjectId(
       octokit,
       inputs.projectLocation,
       inputs.projectNumber,

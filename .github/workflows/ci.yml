@@ -64,7 +64,7 @@ jobs:
         id: coupc-1
         uses: ./
         with:
-          project-name: '[CI] ${{ matrix.target }}'
+          project-name: '[CI] coupc ${{ matrix.target }}'
           column-name: Test column 1
           issue-number: 1
 
