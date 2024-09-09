@@ -56,7 +56,7 @@ async function getProjectId(
   if (!isNaN(projectNumber) && projectNumber > 0) {
     if (ownerIsOrg) {
       const query = `
-        query($owner: String!, $number: Int!)
+        query($owner: String!, $number: Int!) {
           organization(login: $owner) {
             projectV2(number: $number) {
               id
@@ -70,7 +70,7 @@ async function getProjectId(
       return response.organization.projectV2.id
     } else {
       const query = `
-        query($owner: String!, $number: Int!)
+        query($owner: String!, $number: Int!) {
           user(login: $owner) {
             projectV2(number: $number) {
               id
@@ -86,7 +86,7 @@ async function getProjectId(
   } else if (projectTitle) {
     if (ownerIsOrg) {
       const query = `
-        query($owner: String!, $title: String!)
+        query($owner: String!, $title: String!) {
           organization(login: $owner) {
             projectsV2(first: 1, query: $title) {
               nodes {
@@ -106,7 +106,7 @@ async function getProjectId(
       }
     } else {
       const query = `
-        query($owner: String!, $title: String!)
+        query($owner: String!, $title: String!) {
           user(login: $owner) {
             projectsV2(first: 1, query: $title) {
               nodes {

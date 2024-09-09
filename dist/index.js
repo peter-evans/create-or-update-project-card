@@ -82,7 +82,7 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
         if (!isNaN(projectNumber) && projectNumber > 0) {
             if (ownerIsOrg) {
                 const query = `
-        query($owner: String!, $number: Int!)
+        query($owner: String!, $number: Int!) {
           organization(login: $owner) {
             projectV2(number: $number) {
               id
@@ -97,7 +97,7 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
             }
             else {
                 const query = `
-        query($owner: String!, $number: Int!)
+        query($owner: String!, $number: Int!) {
           user(login: $owner) {
             projectV2(number: $number) {
               id
@@ -114,7 +114,7 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
         else if (projectTitle) {
             if (ownerIsOrg) {
                 const query = `
-        query($owner: String!, $title: String!)
+        query($owner: String!, $title: String!) {
           organization(login: $owner) {
             projectsV2(first: 1, query: $title) {
               nodes {
@@ -136,7 +136,7 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
             }
             else {
                 const query = `
-        query($owner: String!, $title: String!)
+        query($owner: String!, $title: String!) {
           user(login: $owner) {
             projectsV2(first: 1, query: $title) {
               nodes {
