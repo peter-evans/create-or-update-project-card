@@ -45,7 +45,12 @@ async function isOrg(octokit, owner): Promise<boolean> {
   }
 }
 
-async function getProjectId(octokit, projectOwner, projectNumber, projectTitle): Promise<string> {
+async function getProjectId(
+  octokit,
+  projectOwner,
+  projectNumber,
+  projectTitle
+): Promise<string> {
   const ownerIsOrg = await isOrg(octokit, projectOwner)
 
   if (!isNaN(projectNumber) && projectNumber > 0) {
@@ -59,7 +64,7 @@ async function getProjectId(octokit, projectOwner, projectNumber, projectTitle):
           }
         }
       `
-      const variables = { owner: projectOwner, number: projectNumber }
+      const variables = {owner: projectOwner, number: projectNumber}
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       return response.organization.projectV2.id
@@ -73,7 +78,7 @@ async function getProjectId(octokit, projectOwner, projectNumber, projectTitle):
           }
         }
       `
-      const variables = { owner: projectOwner, number: projectNumber }
+      const variables = {owner: projectOwner, number: projectNumber}
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       return response.user.projectV2.id
@@ -91,7 +96,7 @@ async function getProjectId(octokit, projectOwner, projectNumber, projectTitle):
           }
         }
       `
-      const variables = { owner: projectOwner, title: projectTitle }
+      const variables = {owner: projectOwner, title: projectTitle}
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       if (response.organization.projectsV2.nodes.length > 0) {
@@ -111,7 +116,7 @@ async function getProjectId(octokit, projectOwner, projectNumber, projectTitle):
           }
         }
       `
-      const variables = { owner: projectOwner, title: projectTitle }
+      const variables = {owner: projectOwner, title: projectTitle}
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       if (response.user.projectsV2.nodes.length > 0) {
@@ -254,7 +259,12 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(inputs.token)
 
-    const projectId = getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName)
+    const projectId = getProjectId(
+      octokit,
+      inputs.projectLocation,
+      inputs.projectNumber,
+      inputs.projectName
+    )
     core.debug(`Project ID: ${projectId}`)
 
     // const projects = await getProjects(octokit, inputs.projectLocation)

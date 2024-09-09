@@ -76,6 +76,92 @@ function isOrg(octokit, owner) {
         }
     });
 }
+function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ownerIsOrg = yield isOrg(octokit, projectOwner);
+        if (!isNaN(projectNumber) && projectNumber > 0) {
+            if (ownerIsOrg) {
+                const query = `
+        query($owner: String!, $number: Int!)
+          organization(login: $owner) {
+            projectV2(number: $number) {
+              id
+            }
+          }
+        }
+      `;
+                const variables = { owner: projectOwner, number: projectNumber };
+                const response = yield octokit.graphql(query, variables);
+                core.debug(`Response: ${(0, util_1.inspect)(response)}`);
+                return response.organization.projectV2.id;
+            }
+            else {
+                const query = `
+        query($owner: String!, $number: Int!)
+          user(login: $owner) {
+            projectV2(number: $number) {
+              id
+            }
+          }
+        }
+      `;
+                const variables = { owner: projectOwner, number: projectNumber };
+                const response = yield octokit.graphql(query, variables);
+                core.debug(`Response: ${(0, util_1.inspect)(response)}`);
+                return response.user.projectV2.id;
+            }
+        }
+        else if (projectTitle) {
+            if (ownerIsOrg) {
+                const query = `
+        query($owner: String!, $title: String!)
+          organization(login: $owner) {
+            projectsV2(first: 1, query: $title) {
+              nodes {
+                id
+              }
+            }
+          }
+        }
+      `;
+                const variables = { owner: projectOwner, title: projectTitle };
+                const response = yield octokit.graphql(query, variables);
+                core.debug(`Response: ${(0, util_1.inspect)(response)}`);
+                if (response.organization.projectsV2.nodes.length > 0) {
+                    return response.organization.projectsV2.nodes[0].id;
+                }
+                else {
+                    throw 'Project not found';
+                }
+            }
+            else {
+                const query = `
+        query($owner: String!, $title: String!)
+          user(login: $owner) {
+            projectsV2(first: 1, query: $title) {
+              nodes {
+                id
+              }
+            }
+          }
+        }
+      `;
+                const variables = { owner: projectOwner, title: projectTitle };
+                const response = yield octokit.graphql(query, variables);
+                core.debug(`Response: ${(0, util_1.inspect)(response)}`);
+                if (response.user.projectsV2.nodes.length > 0) {
+                    return response.user.projectsV2.nodes[0].id;
+                }
+                else {
+                    throw 'Project not found';
+                }
+            }
+        }
+        else {
+            throw 'A valid input for project-number OR project-title must be supplied.';
+        }
+    });
+}
 function getProjects(octokit, projectLocation) {
     return __awaiter(this, void 0, void 0, function* () {
         const [owner, repo] = projectLocation.split('/');
@@ -193,46 +279,57 @@ function run() {
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             const octokit = github.getOctokit(inputs.token);
-            const projects = yield getProjects(octokit, inputs.projectLocation);
-            core.debug(`Projects: ${(0, util_1.inspect)(projects)}`);
-            const project = getProject(projects, inputs.projectNumber, inputs.projectName);
-            core.debug(`Project: ${(0, util_1.inspect)(project)}`);
-            if (!project)
-                throw 'No project matching the supplied inputs found.';
-            const columns = yield octokit.paginate(octokit.rest.projects.listColumns, {
-                project_id: project.id,
-                per_page: 100
-            });
-            core.debug(`Columns: ${(0, util_1.inspect)(columns)}`);
-            const column = columns.find(column => column.name == inputs.columnName);
-            core.debug(`Column: ${(0, util_1.inspect)(column)}`);
-            if (!column)
-                throw 'No column matching the supplied input found.';
-            const content = yield getContent(octokit, inputs.repository, inputs.issueNumber);
-            core.debug(`Content: ${(0, util_1.inspect)(content)}`);
-            const existingCard = yield findCardInColumns(octokit, columns, content.url);
-            if (existingCard) {
-                core.debug(`Existing card: ${(0, util_1.inspect)(existingCard)}`);
-                core.info(`An existing card is already associated with ${content.type} #${inputs.issueNumber}`);
-                core.setOutput('card-id', existingCard.id);
-                if (existingCard.columnUrl != column.url) {
-                    core.info(`Moving card to column '${inputs.columnName}'`);
-                    yield octokit.rest.projects.moveCard({
-                        card_id: existingCard.id,
-                        position: 'top',
-                        column_id: column.id
-                    });
-                }
-            }
-            else {
-                core.info(`Creating card associated with ${content.type} #${inputs.issueNumber}`);
-                const { data: card } = yield octokit.rest.projects.createCard({
-                    column_id: column.id,
-                    content_id: content.id,
-                    content_type: content.type
-                });
-                core.setOutput('card-id', card.id);
-            }
+            const projectId = getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName);
+            core.debug(`Project ID: ${projectId}`);
+            // const projects = await getProjects(octokit, inputs.projectLocation)
+            // core.debug(`Projects: ${inspect(projects)}`)
+            // const project = getProject(
+            //   projects,
+            //   inputs.projectNumber,
+            //   inputs.projectName
+            // )
+            // core.debug(`Project: ${inspect(project)}`)
+            // if (!project) throw 'No project matching the supplied inputs found.'
+            // const columns = await octokit.paginate(octokit.rest.projects.listColumns, {
+            //   project_id: project.id,
+            //   per_page: 100
+            // })
+            // core.debug(`Columns: ${inspect(columns)}`)
+            // const column = columns.find(column => column.name == inputs.columnName)
+            // core.debug(`Column: ${inspect(column)}`)
+            // if (!column) throw 'No column matching the supplied input found.'
+            // const content = await getContent(
+            //   octokit,
+            //   inputs.repository,
+            //   inputs.issueNumber
+            // )
+            // core.debug(`Content: ${inspect(content)}`)
+            // const existingCard = await findCardInColumns(octokit, columns, content.url)
+            // if (existingCard) {
+            //   core.debug(`Existing card: ${inspect(existingCard)}`)
+            //   core.info(
+            //     `An existing card is already associated with ${content.type} #${inputs.issueNumber}`
+            //   )
+            //   core.setOutput('card-id', existingCard.id)
+            //   if (existingCard.columnUrl != column.url) {
+            //     core.info(`Moving card to column '${inputs.columnName}'`)
+            //     await octokit.rest.projects.moveCard({
+            //       card_id: existingCard.id,
+            //       position: 'top',
+            //       column_id: column.id
+            //     })
+            //   }
+            // } else {
+            //   core.info(
+            //     `Creating card associated with ${content.type} #${inputs.issueNumber}`
+            //   )
+            //   const {data: card} = await octokit.rest.projects.createCard({
+            //     column_id: column.id,
+            //     content_id: content.id,
+            //     content_type: content.type
+            //   })
+            //   core.setOutput('card-id', card.id)
+            // }
         }
         catch (error) {
             core.debug((0, util_1.inspect)(error));
