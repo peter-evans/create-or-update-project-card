@@ -64,6 +64,7 @@ jobs:
         id: coupc-1
         uses: ./
         with:
+          token: ${{ secrets.COUPC_PAT }}
           project-name: '[CI] coupc ${{ matrix.target }}'
           column-name: Test column 1
           issue-number: 1
@@ -72,6 +73,7 @@ jobs:
       - name: Repo project - create card
         uses: ./
         with:
+          token: ${{ secrets.COUPC_PAT }}
           project-number: 4
           column-name: Test column 1
           issue-number: 1
