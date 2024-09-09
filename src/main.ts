@@ -117,7 +117,6 @@ async function getProjectId(
         }
       `
       const variables = {owner: projectOwner, title: projectTitle}
-      core.debug(`Variables: ${inspect(variables)}`)
       const response = await octokit.graphql(query, variables)
       core.debug(`Response: ${inspect(response)}`)
       if (response.user.projectsV2.nodes.length > 0) {
@@ -128,48 +127,6 @@ async function getProjectId(
     }
   } else {
     throw 'A valid input for project-number OR project-title must be supplied.'
-  }
-}
-
-async function getProjects(octokit, projectLocation): Promise<Project[]> {
-  const [owner, repo] = projectLocation.split('/')
-  const projects = await (async () => {
-    if (repo) {
-      return await octokit.paginate(octokit.rest.projects.listForRepo, {
-        owner: owner,
-        repo: repo,
-        per_page: 100
-      })
-    } else if (await isOrg(octokit, owner)) {
-      return await octokit.paginate(octokit.rest.projects.listForOrg, {
-        org: owner,
-        per_page: 100
-      })
-    } else {
-      return await octokit.paginate(octokit.rest.projects.listForUser, {
-        username: owner,
-        per_page: 100
-      })
-    }
-  })()
-  core.debug(`Projects list: ${inspect(projects)}`)
-
-  return projects.map(p => {
-    return new Project(p.number, p.name, p.id)
-  })
-}
-
-function getProject(
-  projects: Project[],
-  projectNumber,
-  projectName
-): Project | undefined {
-  if (!isNaN(projectNumber) && projectNumber > 0) {
-    return projects.find(project => project.number == projectNumber)
-  } else if (projectName) {
-    return projects.find(project => project.name == projectName)
-  } else {
-    throw 'A valid input for project-number OR project-name must be supplied.'
   }
 }
 
@@ -249,9 +206,9 @@ async function run(): Promise<void> {
   try {
     const inputs = {
       token: core.getInput('token'),
-      projectLocation: core.getInput('project-location'),
+      projectOwner: core.getInput('project-owner'),
       projectNumber: Number(core.getInput('project-number')),
-      projectName: core.getInput('project-name'),
+      projectTitle: core.getInput('project-title'),
       columnName: core.getInput('column-name'),
       repository: core.getInput('repository'),
       issueNumber: Number(core.getInput('issue-number'))
@@ -262,22 +219,11 @@ async function run(): Promise<void> {
 
     const projectId = await getProjectId(
       octokit,
-      inputs.projectLocation,
+      inputs.projectOwner,
       inputs.projectNumber,
-      inputs.projectName
+      inputs.projectTitle
     )
     core.debug(`Project ID: ${projectId}`)
-
-    // const projects = await getProjects(octokit, inputs.projectLocation)
-    // core.debug(`Projects: ${inspect(projects)}`)
-
-    // const project = getProject(
-    //   projects,
-    //   inputs.projectNumber,
-    //   inputs.projectName
-    // )
-    // core.debug(`Project: ${inspect(project)}`)
-    // if (!project) throw 'No project matching the supplied inputs found.'
 
     // const columns = await octokit.paginate(octokit.rest.projects.listColumns, {
     //   project_id: project.id,

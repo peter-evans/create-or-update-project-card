@@ -12,7 +12,7 @@ A GitHub action to create or update a project card.
       - name: Create or Update Project Card
         uses: peter-evans/create-or-update-project-card@v3
         with:
-          project-name: My project
+          project-title: My project
           column-name: My column
           issue-number: 1
 ```
@@ -26,7 +26,7 @@ If not in the specified column, the action will move the card.
       - name: Create or Update Project Card
         uses: peter-evans/create-or-update-project-card@v3
         with:
-          project-name: My project
+          project-title: My project
           column-name: My second column
           issue-number: 1
 ```
@@ -40,8 +40,8 @@ When creating cards in an organization or user project, a `repo` and `admin:org`
         uses: peter-evans/create-or-update-project-card@v3
         with:
           token: ${{ secrets.PAT }}
-          project-location: my-org
-          project-name: My project
+          project-owner: my-org
+          project-title: My project
           column-name: My second column
           issue-number: 1
 ```
@@ -59,7 +59,7 @@ jobs:
       - name: Create or Update Project Card
         uses: peter-evans/create-or-update-project-card@v3
         with:
-          project-name: My project
+          project-title: My project
           column-name: My column
 ```
 
@@ -81,7 +81,7 @@ jobs:
       - name: Create or Update Project Card
         uses: peter-evans/create-or-update-project-card@v3
         with:
-          project-name: My project
+          project-title: My project
           column-name: My column
           issue-number: ${{ github.event.number }}
 ```
@@ -91,9 +91,9 @@ jobs:
 | Name | Description | Default |
 | --- | --- | --- |
 | `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). | `GITHUB_TOKEN` |
-| `project-location` | The location of the project. Either a repository, organization, or user. | `github.repository` (current repository) |
-| `project-number` | (**semi-required**) The number of the project. Either `project-number` OR `project-name` must be supplied. | |
-| `project-name` | (**semi-required**) The name of the project. Either `project-number` OR `project-name` must be supplied. Note that a project's name is not unique. The action will use the first matching project found. | |
+| `project-owner` | The owner of the project. Either an organization, or user. | `github.repository_owner` (current repository owner) |
+| `project-number` | (**semi-required**) The number of the project. Either `project-number` OR `project-title` must be supplied. | |
+| `project-title` | (**semi-required**) The title of the project. Either `project-number` OR `project-title` must be supplied. Note that a project's title is not unique. The action will use the first matching project found. | |
 | `column-name` | (**required**) The name of the column to add a card to, or move an existing card to. | |
 | `repository` | The GitHub repository containing the issue or pull request. | `github.repository` (current repository) |
 | `issue-number` | The issue or pull request number to associate with the card. | `github.event.issue.number` |
@@ -107,7 +107,7 @@ The action outputs `card-id` for use in later workflow steps.
         id: coupc
         uses: peter-evans/create-or-update-project-card@v3
         with:
-          project-name: My project
+          project-title: My project
           column-name: My column
           issue-number: 1
       - name: Check output

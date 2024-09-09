@@ -147,7 +147,6 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
         }
       `;
                 const variables = { owner: projectOwner, title: projectTitle };
-                core.debug(`Variables: ${(0, util_1.inspect)(variables)}`);
                 const response = yield octokit.graphql(query, variables);
                 core.debug(`Response: ${(0, util_1.inspect)(response)}`);
                 if (response.user.projectsV2.nodes.length > 0) {
@@ -162,47 +161,6 @@ function getProjectId(octokit, projectOwner, projectNumber, projectTitle) {
             throw 'A valid input for project-number OR project-title must be supplied.';
         }
     });
-}
-function getProjects(octokit, projectLocation) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const [owner, repo] = projectLocation.split('/');
-        const projects = yield (() => __awaiter(this, void 0, void 0, function* () {
-            if (repo) {
-                return yield octokit.paginate(octokit.rest.projects.listForRepo, {
-                    owner: owner,
-                    repo: repo,
-                    per_page: 100
-                });
-            }
-            else if (yield isOrg(octokit, owner)) {
-                return yield octokit.paginate(octokit.rest.projects.listForOrg, {
-                    org: owner,
-                    per_page: 100
-                });
-            }
-            else {
-                return yield octokit.paginate(octokit.rest.projects.listForUser, {
-                    username: owner,
-                    per_page: 100
-                });
-            }
-        }))();
-        core.debug(`Projects list: ${(0, util_1.inspect)(projects)}`);
-        return projects.map(p => {
-            return new Project(p.number, p.name, p.id);
-        });
-    });
-}
-function getProject(projects, projectNumber, projectName) {
-    if (!isNaN(projectNumber) && projectNumber > 0) {
-        return projects.find(project => project.number == projectNumber);
-    }
-    else if (projectName) {
-        return projects.find(project => project.name == projectName);
-    }
-    else {
-        throw 'A valid input for project-number OR project-name must be supplied.';
-    }
 }
 function getContent(octokit, repository, issueNumber) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -271,26 +229,17 @@ function run() {
         try {
             const inputs = {
                 token: core.getInput('token'),
-                projectLocation: core.getInput('project-location'),
+                projectOwner: core.getInput('project-owner'),
                 projectNumber: Number(core.getInput('project-number')),
-                projectName: core.getInput('project-name'),
+                projectTitle: core.getInput('project-title'),
                 columnName: core.getInput('column-name'),
                 repository: core.getInput('repository'),
                 issueNumber: Number(core.getInput('issue-number'))
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             const octokit = github.getOctokit(inputs.token);
-            const projectId = yield getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName);
+            const projectId = yield getProjectId(octokit, inputs.projectOwner, inputs.projectNumber, inputs.projectTitle);
             core.debug(`Project ID: ${projectId}`);
-            // const projects = await getProjects(octokit, inputs.projectLocation)
-            // core.debug(`Projects: ${inspect(projects)}`)
-            // const project = getProject(
-            //   projects,
-            //   inputs.projectNumber,
-            //   inputs.projectName
-            // )
-            // core.debug(`Project: ${inspect(project)}`)
-            // if (!project) throw 'No project matching the supplied inputs found.'
             // const columns = await octokit.paginate(octokit.rest.projects.listColumns, {
             //   project_id: project.id,
             //   per_page: 100

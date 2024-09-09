@@ -4,19 +4,19 @@ inputs:
   token:
     description: 'GITHUB_TOKEN or a repo scoped PAT'
     default: ${{ github.token }}
-  project-location:
+  project-owner:
     description: >
-      The location of the project. Either a repository, organization, or user.
+      The owner of the project. Either an organization, or user.
     default: ${{ github.repository_owner }}
   project-number:
     description: >
       The number of the project.
-      Semi-required. Either `project-number` OR `project-name` must be supplied.
-  project-name:
+      Semi-required. Either `project-number` OR `project-title` must be supplied.
+  project-title:
     description: >
-      The name of the project.
-      Semi-required. Either `project-number` OR `project-name` must be supplied.
-      Note that a project's name is not unique. The action will use the first matching project found.
+      The title of the project.
+      Semi-required. Either `project-number` OR `project-title` must be supplied.
+      Note that a project's title is not unique. The action will use the first matching project found.
   column-name:
     description: 'The name of the column to add a card to, or move an existing card to.'
     required: true

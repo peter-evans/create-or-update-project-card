@@ -65,7 +65,7 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.COUPC_PAT }}
-          project-name: '[CI] coupc ${{ matrix.target }}'
+          project-title: '[CI] coupc ${{ matrix.target }}'
           column-name: Test column 1
           issue-number: 1
 
@@ -81,14 +81,14 @@ jobs:
       # - name: Repo project - card exists
       #   uses: ./
       #   with:
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     issue-number: 1
 
       # - name: Repo project - move card
       #   uses: ./
       #   with:
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 2
       #     issue-number: 1
 
@@ -105,7 +105,7 @@ jobs:
       #   id: coupc-2
       #   uses: ./
       #   with:
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     issue-number: ${{ github.event.number }}
 
@@ -113,7 +113,7 @@ jobs:
       #   if: github.event_name == 'pull_request'
       #   uses: ./
       #   with:
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     issue-number: ${{ github.event.number }}
 
@@ -133,8 +133,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: create-or-update-project-card
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: create-or-update-project-card
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     repository: create-or-update-project-card/test-fixture
       #     issue-number: 1
@@ -143,8 +143,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: create-or-update-project-card
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: create-or-update-project-card
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     repository: create-or-update-project-card/test-fixture
       #     issue-number: 1
@@ -153,8 +153,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: create-or-update-project-card
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: create-or-update-project-card
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 2
       #     repository: create-or-update-project-card/test-fixture
       #     issue-number: 1
@@ -175,8 +175,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: test-case-machine-user
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: test-case-machine-user
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     repository: test-case-machine-user/create-or-update-project-card-fixture
       #     issue-number: 1
@@ -185,8 +185,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: test-case-machine-user
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: test-case-machine-user
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 1
       #     repository: test-case-machine-user/create-or-update-project-card-fixture
       #     issue-number: 1
@@ -195,8 +195,8 @@ jobs:
       #   uses: ./
       #   with:
       #     token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-      #     project-location: test-case-machine-user
-      #     project-name: '[CI] ${{ matrix.target }}'
+      #     project-owner: test-case-machine-user
+      #     project-title: '[CI] ${{ matrix.target }}'
       #     column-name: Test column 2
       #     repository: test-case-machine-user/create-or-update-project-card-fixture
       #     issue-number: 1
