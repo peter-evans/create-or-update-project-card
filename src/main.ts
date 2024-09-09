@@ -45,6 +45,86 @@ async function isOrg(octokit, owner): Promise<boolean> {
   }
 }
 
+async function getProjectId(octokit, projectOwner, projectNumber, projectTitle): Promise<string> {
+  const ownerIsOrg = await isOrg(octokit, projectOwner)
+
+  if (!isNaN(projectNumber) && projectNumber > 0) {
+    if (ownerIsOrg) {
+      const query = `
+        query($owner: String!, $number: Int!)
+          organization(login: $owner) {
+            projectV2(number: $number) {
+              id
+            }
+          }
+        }
+      `
+      const variables = { owner: projectOwner, number: projectNumber }
+      const response = await octokit.graphql(query, variables)
+      core.debug(`Response: ${inspect(response)}`)
+      return response.organization.projectV2.id
+    } else {
+      const query = `
+        query($owner: String!, $number: Int!)
+          user(login: $owner) {
+            projectV2(number: $number) {
+              id
+            }
+          }
+        }
+      `
+      const variables = { owner: projectOwner, number: projectNumber }
+      const response = await octokit.graphql(query, variables)
+      core.debug(`Response: ${inspect(response)}`)
+      return response.user.projectV2.id
+    }
+  } else if (projectTitle) {
+    if (ownerIsOrg) {
+      const query = `
+        query($owner: String!, $title: String!)
+          organization(login: $owner) {
+            projectsV2(first: 1, query: $title) {
+              nodes {
+                id
+              }
+            }
+          }
+        }
+      `
+      const variables = { owner: projectOwner, title: projectTitle }
+      const response = await octokit.graphql(query, variables)
+      core.debug(`Response: ${inspect(response)}`)
+      if (response.organization.projectsV2.nodes.length > 0) {
+        return response.organization.projectsV2.nodes[0].id
+      } else {
+        throw 'Project not found'
+      }
+    } else {
+      const query = `
+        query($owner: String!, $title: String!)
+          user(login: $owner) {
+            projectsV2(first: 1, query: $title) {
+              nodes {
+                id
+              }
+            }
+          }
+        }
+      `
+      const variables = { owner: projectOwner, title: projectTitle }
+      const response = await octokit.graphql(query, variables)
+      core.debug(`Response: ${inspect(response)}`)
+      if (response.user.projectsV2.nodes.length > 0) {
+        return response.user.projectsV2.nodes[0].id
+      } else {
+        throw 'Project not found'
+      }
+    }
+  } else {
+    throw 'A valid input for project-number OR project-title must be supplied.'
+  }
+}
+
 async function getProjects(octokit, projectLocation): Promise<Project[]> {
   const [owner, repo] = projectLocation.split('/')
   const projects = await (async () => {
@@ -174,61 +254,64 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(inputs.token)
 
-    const projects = await getProjects(octokit, inputs.projectLocation)
-    core.debug(`Projects: ${inspect(projects)}`)
+    const projectId = getProjectId(octokit, inputs.projectLocation, inputs.projectNumber, inputs.projectName)
+    core.debug(`Project ID: ${projectId}`)
 
-    const project = getProject(
-      projects,
-      inputs.projectNumber,
-      inputs.projectName
-    )
-    core.debug(`Project: ${inspect(project)}`)
-    if (!project) throw 'No project matching the supplied inputs found.'
+    // const projects = await getProjects(octokit, inputs.projectLocation)
+    // core.debug(`Projects: ${inspect(projects)}`)
 
-    const columns = await octokit.paginate(octokit.rest.projects.listColumns, {
-      project_id: project.id,
-      per_page: 100
-    })
-    core.debug(`Columns: ${inspect(columns)}`)
+    // const project = getProject(
+    //   projects,
+    //   inputs.projectNumber,
+    //   inputs.projectName
+    // )
+    // core.debug(`Project: ${inspect(project)}`)
+    // if (!project) throw 'No project matching the supplied inputs found.'
 
-    const column = columns.find(column => column.name == inputs.columnName)
-    core.debug(`Column: ${inspect(column)}`)
-    if (!column) throw 'No column matching the supplied input found.'
+    // const columns = await octokit.paginate(octokit.rest.projects.listColumns, {
+    //   project_id: project.id,
+    //   per_page: 100
+    // })
+    // core.debug(`Columns: ${inspect(columns)}`)
 
-    const content = await getContent(
-      octokit,
-      inputs.repository,
-      inputs.issueNumber
-    )
-    core.debug(`Content: ${inspect(content)}`)
+    // const column = columns.find(column => column.name == inputs.columnName)
+    // core.debug(`Column: ${inspect(column)}`)
+    // if (!column) throw 'No column matching the supplied input found.'
 
-    const existingCard = await findCardInColumns(octokit, columns, content.url)
-    if (existingCard) {
-      core.debug(`Existing card: ${inspect(existingCard)}`)
-      core.info(
-        `An existing card is already associated with ${content.type} #${inputs.issueNumber}`
-      )
-      core.setOutput('card-id', existingCard.id)
+    // const content = await getContent(
+    //   octokit,
+    //   inputs.repository,
+    //   inputs.issueNumber
+    // )
+    // core.debug(`Content: ${inspect(content)}`)
 
-      if (existingCard.columnUrl != column.url) {
-        core.info(`Moving card to column '${inputs.columnName}'`)
-        await octokit.rest.projects.moveCard({
-          card_id: existingCard.id,
-          position: 'top',
-          column_id: column.id
-        })
-      }
-    } else {
-      core.info(
-        `Creating card associated with ${content.type} #${inputs.issueNumber}`
-      )
-      const {data: card} = await octokit.rest.projects.createCard({
-        column_id: column.id,
-        content_id: content.id,
-        content_type: content.type
-      })
-      core.setOutput('card-id', card.id)
-    }
+    // const existingCard = await findCardInColumns(octokit, columns, content.url)
+    // if (existingCard) {
+    //   core.debug(`Existing card: ${inspect(existingCard)}`)
+    //   core.info(
+    //     `An existing card is already associated with ${content.type} #${inputs.issueNumber}`
+    //   )
+    //   core.setOutput('card-id', existingCard.id)
+
+    //   if (existingCard.columnUrl != column.url) {
+    //     core.info(`Moving card to column '${inputs.columnName}'`)
+    //     await octokit.rest.projects.moveCard({
+    //       card_id: existingCard.id,
+    //       position: 'top',
+    //       column_id: column.id
+    //     })
+    //   }
+    // } else {
+    //   core.info(
+    //     `Creating card associated with ${content.type} #${inputs.issueNumber}`
+    //   )
+    //   const {data: card} = await octokit.rest.projects.createCard({
+    //     column_id: column.id,
+    //     content_id: content.id,
+    //     content_type: content.type
+    //   })
+    //   core.setOutput('card-id', card.id)
+    // }
   } catch (error) {
     core.debug(inspect(error))
     core.setFailed(getErrorMessage(error))

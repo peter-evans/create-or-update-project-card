@@ -7,7 +7,7 @@ inputs:
   project-location:
     description: >
       The location of the project. Either a repository, organization, or user.
-    default: ${{ github.repository }}
+    default: ${{ github.repository_owner }}
   project-number:
     description: >
       The number of the project.
