@@ -4,6 +4,9 @@
 
 A GitHub action to create or update a project card.
 
+> [!IMPORTANT]  
+> This action does not support v2 projects and is now [deprecated](https://github.com/peter-evans/create-or-update-project-card/issues/64#issuecomment-2338205349).
+
 ## Usage
 
 ### Create a project card
